@@ -11,7 +11,7 @@ import {
   type Investment,
 } from "./data";
 
-type View = "list" | "create";
+type View = "list" | "create" | "detail";
 
 function pad(n: number) {
   return String(n).padStart(2, "0");
@@ -63,6 +63,8 @@ function useMenuPosition(open: boolean, wrapRef: RefObject<HTMLElement | null>) 
 export default function App() {
   const [view, setView] = useState<View>("list");
   const [groups, setGroups] = useState<GroupRow[]>(DEFAULT_GROUPS);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [listBanner, setListBanner] = useState(false);
   const [notices, setNotices] = useState<Notice[]>([]);
   const noticeId = useRef(0);
   const [listQuery, setListQuery] = useState("");
@@ -128,12 +130,31 @@ export default function App() {
     setNameError("");
     setInvestError("");
     setRepError("");
+    setEditingId(null);
+    setListBanner(false);
     setView("create");
+  }
+
+  function openGroup(g: GroupRow) {
+    setEditingId(g.id);
+    setName(g.name);
+    setDescription(g.description);
+    setInvestments([...g.items]);
+    setAdvisor(g.advisor === "—" ? "" : g.advisor);
+    setReps([...g.reps]);
+    setAdvisorOpen(false);
+    setRepOpen(false);
+    setNameError("");
+    setInvestError("");
+    setRepError("");
+    setSlideover(false);
+    setView("detail");
   }
 
   function backToList() {
     setView("list");
     setSlideover(false);
+    setEditingId(null);
   }
 
   function openSlideover() {
@@ -166,12 +187,10 @@ export default function App() {
 
   function submitGroup() {
     const trimmed = name.trim();
+    const isEdit = Boolean(editingId);
     let blocked = false;
     if (!trimmed) {
       setNameError("Enter the Investment group name");
-      blocked = true;
-    } else if (groups.some((g) => g.name.toLowerCase() === trimmed.toLowerCase())) {
-      setNameError("Investment group name already exists");
       blocked = true;
     } else {
       setNameError("");
@@ -194,18 +213,27 @@ export default function App() {
       );
       return;
     }
-    setGroups((prev) => [
-      ...prev,
-      {
-        name: trimmed,
-        investments: pad(investments.length),
-        advisor: advisor || "—",
-        representative: advisor ? pad(reps.length) : "00",
-        status: "Open",
-      },
-    ]);
+    const next: GroupRow = {
+      id: editingId ?? `g-${Date.now()}`,
+      name: trimmed,
+      description,
+      items: [...investments],
+      advisor: advisor || "—",
+      reps: advisor ? [...reps] : [],
+      status: "Open",
+    };
+    if (editingId) {
+      setGroups((prev) => prev.map((g) => (g.id === editingId ? next : g)));
+    } else {
+      setGroups((prev) => [...prev, next]);
+    }
+    setEditingId(null);
     setView("list");
-    pushNotice("success", "Investment group created successfully");
+    setListBanner(true);
+    pushNotice(
+      "success",
+      isEdit ? "Investment group updated successfully" : "Investment group created successfully",
+    );
   }
 
   return (
@@ -282,6 +310,16 @@ export default function App() {
                   Create Investment group
                 </button>
               </div>
+              {listBanner && (
+                <div className="list-banner">
+                  <span>
+                    <Icon name="check-circle" className="icon-16" /> Investment group created successfully
+                  </span>
+                  <button type="button" className="list-banner-close" onClick={() => setListBanner(false)} aria-label="Dismiss">
+                    <Icon name="close" className="icon-12" />
+                  </button>
+                </div>
+              )}
               <div className="search-row">
                 <div className="search-box">
                   <Icon name="search" className="icon-14" />
@@ -306,12 +344,16 @@ export default function App() {
                   <HeaderCell label="Representative" />
                   <HeaderCell label="Investment Status" />
                 </div>
-                {visibleGroups.map((g, i) => (
-                  <div className="table-row ig-cols" key={`${g.name}-${i}`}>
-                    <div className="name">{g.name}</div>
-                    <div>{g.investments}</div>
+                {visibleGroups.map((g) => (
+                  <div className="table-row ig-cols" key={g.id}>
+                    <div>
+                      <button type="button" className="group-link" onClick={() => openGroup(g)}>
+                        {g.name}
+                      </button>
+                    </div>
+                    <div>{pad(g.items.length)}</div>
                     <div>{g.advisor}</div>
-                    <div>{g.representative}</div>
+                    <div>{pad(g.reps.length)}</div>
                     <div className="status">{g.status}</div>
                   </div>
                 ))}
@@ -319,21 +361,21 @@ export default function App() {
             </>
           )}
 
-          {view === "create" && (
+          {(view === "create" || view === "detail") && (
             <>
               <div className="create-head">
                 <div>
                   <button type="button" className="back" onClick={backToList}>
                     <Icon name="arrow-left" className="icon-back" /> Back
                   </button>
-                  <h1>Create Investment group</h1>
+                  <h1>{view === "create" ? "Create Investment group" : name || "Investment group"}</h1>
                 </div>
                 <div className="head-actions">
                   <button type="button" className="btn-outline" onClick={backToList}>
                     Cancel
                   </button>
                   <button type="button" className="btn-primary" onClick={submitGroup}>
-                    Create
+                    {view === "detail" ? "Save" : "Create"}
                   </button>
                 </div>
               </div>

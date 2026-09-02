@@ -15,10 +15,12 @@ export type Company = {
 };
 
 export type GroupRow = {
+  id: string;
   name: string;
-  investments: string;
+  description: string;
+  items: Investment[];
   advisor: string;
-  representative: string;
+  reps: string[];
   status: "Open";
 };
 
@@ -60,28 +62,37 @@ export const CATALOG: Investment[] = [
   { id: "i9", idKind: "Plan ID", code: "778210", name: "Stable value fund", type: "Annuity" },
 ];
 
+const SEED_ITEMS = CATALOG.slice(0, 3);
+const SEED_REPS = ["Jon Carter", "Paul Jason", "Samuel Johnson", "Peter"];
+
 export const DEFAULT_GROUPS: GroupRow[] = [
   {
+    id: "g1",
     name: "Target Retirement Fund",
-    investments: "21",
+    description: "",
+    items: SEED_ITEMS,
     advisor: "Captrust advisors",
-    representative: "04",
+    reps: SEED_REPS,
     status: "Open",
   },
   {
+    id: "g2",
     name: "Target Retirement Fund",
-    investments: "21",
+    description: "",
+    items: SEED_ITEMS,
     advisor: "Captrust advisors",
-    representative: "04",
+    reps: SEED_REPS,
     status: "Open",
   },
 ];
 
 export const SUCCESS_GROUP: GroupRow = {
+  id: "g-success",
   name: "401(k) NLG Investment",
-  investments: "21",
+  description: "Testing group 001",
+  items: SEED_ITEMS,
   advisor: "Captrust advisors",
-  representative: "04",
+  reps: SEED_REPS,
   status: "Open",
 };
 

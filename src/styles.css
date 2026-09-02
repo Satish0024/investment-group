@@ -662,6 +662,49 @@ button {
   font-size: 16px;
 }
 
+.group-link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 16px;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.list-banner {
+  margin: 8px 0 8px auto;
+  background: var(--success-bg);
+  color: var(--text);
+  border: 1px solid var(--success);
+  border-radius: 4px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  width: 397px;
+}
+
+.list-banner span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-banner-close {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+
 .status {
   color: var(--success);
   font-weight: 600;
